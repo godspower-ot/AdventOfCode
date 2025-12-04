@@ -1,5 +1,7 @@
 # Advent of Code Solutions
 
+https://adventofcode.com/
+
 This repository contains my solutions for **Advent of Code**, the annual December programming challenge series.  
 Solutions are organized by **year**, then by **day**, with separate folders for **Part 1** and **Part 2** of each puzzle.
 
