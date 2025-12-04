@@ -1,7 +1,3 @@
-Here is your text converted to Markdown **without altering any content** (only adding Markdown structure such as headings, emphasis, and code blocks):
-
----
-
 # Day 1: Secret Entrance
 
 The Elves have good news and bad news.
