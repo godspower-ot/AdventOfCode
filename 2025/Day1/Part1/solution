@@ -1,0 +1,42 @@
+#!/bin/bash
+
+# Steps:
+# - read in a rotation from sequence file
+# - identity amount 
+# - remove cyclic movements using MOD(100)
+# - apply rotation and detect zero encounter (save in a counter)
+# - repeat until no new rotation entries
+# - report counter as passcode
+
+INPUT_FILE_PATH="./input"
+
+dial=(50)
+counter=(0)
+
+while IFS= read -r rotation; do
+    [[ -z $rotation ]] && break
+    
+    amount=${rotation[@]:1} && (( amount = amount % 100 ))
+
+    # log dial rotation
+    printf "Dial=(%d),  Rotation=(%s)" $dial $rotation
+
+    case $rotation in
+        "R"*) (( dial += amount ));;
+        "L"*) (( dial -= amount ));;
+    esac
+
+    if [[ $dial -gt 99 ]]; then
+        (( dial-=100 ))
+    elif [[ $dial -lt 0 ]]; then 
+        (( dial+=100 ))
+    fi
+    
+    (( dial == 0 )) && (( counter++ ))
+
+    # log dial position
+    echo " Dial: " $dial
+
+done < $INPUT_FILE_PATH
+
+printf "\nPasscode= %d\n" $counter
