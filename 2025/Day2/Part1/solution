@@ -1,0 +1,44 @@
+#!/bin/bash
+
+# Steps
+# - read in an ID range (separated by ',')
+# - check all value in range to find invalid values
+# - add invalid ids to a sum
+# - repeat this until we're out of ranges
+# - report sum as passcode
+
+INPUT_FILE_PATH="./input"
+SUM=0
+
+isValidID(){
+    id="$1"
+    local size && size=${#id}
+
+    # odd numbers can't form invalid patterns
+    (( size % 2 != 0 )) && return 0
+    
+    (( size /= 2 ))
+
+    # detect invalid id
+    [[ ${id[@]:0:$size} == ${id[@]:$size} ]] && return -1
+    
+    # valid id
+    return 0
+}
+
+IFS=$',\n'
+ranges=$(<$INPUT_FILE_PATH)
+
+for range in $ranges; do
+    IFS="-"
+    arr=(${range[@]})
+
+    id=${arr[0]}
+    while (( id <= ${arr[1]} )); do
+        isValidID "$id" || (( SUM+=id ))
+        (( id++ ))
+    done
+done
+
+# report sum of invalid IDS
+printf "Answer: %d\n" $SUM
