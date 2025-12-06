@@ -1,0 +1,37 @@
+#!/bin/bash
+
+# Steps
+# - read in each battery bank from the file
+# - find the 2 maximum joltage 
+# - add joltages to an increasing JOLTAGE
+# - repeat for all battery banks
+# - report JOLTAGE as answer
+
+INPUT_FILE_PATH="./input"
+JOLTAGE=(0)
+
+while IFS= read -r bank || [ -n "$bank" ]; do
+    b1=(0) && b2=(0)
+    index=(0)
+
+    while [[ $index -lt ${#bank} ]]; do
+        battery=${bank[@]:$index:1}
+
+        if [[ $index -lt $(( ${#bank} - 1 )) && $battery -gt $b1 ]]; then
+            b1=$battery
+            b2=${bank[@]:$(( index + 1 )):1}
+
+        elif [[ $battery -gt $b2 ]]; then
+            b2=$battery
+        fi
+       
+        (( index++ ))
+    done
+    
+    joltage="$b1$b2"
+    
+    # increase joltage by max batteries
+    (( JOLTAGE += joltage ))
+done < $INPUT_FILE_PATH
+
+printf "Answer: %d\n" $JOLTAGE
