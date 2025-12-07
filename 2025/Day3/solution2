@@ -1,0 +1,45 @@
+#!/bin/bash
+
+# Steps
+# - read in each battery bank from the file
+# - find the 12 maximum joltages 
+# - add joltages to an increasing JOLTAGE counter
+# - repeat for all battery banks
+# - report JOLTAGE as answer
+
+INPUT_FILE_PATH="./input"
+JOLTAGE=(0)
+BATTERIES=(12)
+
+find_max(){
+    list="$1"
+    rem=$2
+
+    # recursion base
+    if [[ $rem -eq 0 ]]; then
+        printf ""
+        return 0
+    fi
+    
+    max=(0) && index=(0)
+    while [[ $index -lt $(( ${#list} - rem + 1 )) ]]; do
+        [[ ${list[@]:$index:1} -gt ${list[@]:$max:1} ]] && max=$index
+        (( index++ ))
+    done
+    
+    printf "%d" "${list[@]:$max:1}"
+    
+    find_max "${list[@]:$(( max + 1 ))}" $(( rem - 1 ))
+
+    return 0 
+}
+
+while IFS= read -r bank || [ -n "$bank" ]; do
+    
+    joltage=$(find_max "$bank" $BATTERIES)
+
+    # increase joltage by max batteries
+    (( JOLTAGE += joltage ))
+done < $INPUT_FILE_PATH
+
+printf "Answer: %d\n" $JOLTAGE
