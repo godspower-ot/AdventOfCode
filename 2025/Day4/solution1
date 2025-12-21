@@ -1,0 +1,65 @@
+#!/bin/bash
+
+# Steps
+# - provide a buffer for 3 lines of input at any given time
+# - read one line at a time from input file, appending to the end of the buffer
+# - after each read identify and count the number of accessible roll papers (ROLLS) in the middle line
+
+INPUT_FILE_PATH="./input"
+BUFFER=()
+ROLLS=0
+append_line_to_buffer(){
+    local line=$1
+
+    BUFFER[0]=${BUFFER[1]}
+    BUFFER[1]=${BUFFER[2]}
+    BUFFER[2]=$line
+}
+
+ADJ_ROLLS_=0
+count_adj_rolls(){
+    ADJ_ROLLS_=0
+    local i=$1
+
+    [[ $i -lt 0 ]] && return 0
+
+    [[ ${BUFFER[0]:$i:1} = "@" ]] && (( ADJ_ROLLS_++ ))
+    [[ ${BUFFER[1]:$i:1} = "@" ]] && (( ADJ_ROLLS_++ ))
+    [[ ${BUFFER[2]:$i:1} = "@" ]] && (( ADJ_ROLLS_++ ))
+
+    return 0
+}
+
+count_rolls(){
+    local line=${BUFFER[1]}
+    [ -z $line ] && return 0
+    
+    local i=0
+    while [[ $i -lt ${#line} ]]; do
+        local roll=${line[@]:$i:1}
+        [ ! $roll = "@" ] && {
+            (( i++ ))
+            continue
+        }
+
+        local adj_rolls=0
+
+        count_adj_rolls $i && (( adj_rolls += ADJ_ROLLS_ ))
+        count_adj_rolls $(( i-1 )) && (( adj_rolls += ADJ_ROLLS_ ))
+        count_adj_rolls $(( i+1 )) && (( adj_rolls += ADJ_ROLLS_ ))
+
+        [[ $adj_rolls -le 4 ]] && (( ROLLS++ ))
+
+        (( i++ ))
+    done
+}
+
+while IFS= read -r line || [ 0 ]; do
+    append_line_to_buffer $line
+    count_rolls
+    
+    [ -z $line ] && break
+done < $INPUT_FILE_PATH
+
+
+printf "Answer: %d\n" $ROLLS
