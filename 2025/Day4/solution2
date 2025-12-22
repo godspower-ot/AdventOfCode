@@ -1,0 +1,96 @@
+#!/bin/bash
+
+# Steps
+# - read all lines from input file into an array, forming a matrix
+# - run throw each element in the matrix, detecting if it's accessible (total no. of adjacent rolls less than 4)
+# - if an element is accessible increase counter, then replace it with a "."
+# - restart the entire process again until we get no more accessible elements
+
+INPUT_FILE_PATH="./input"
+MATRIX=()
+ROLLS=0
+
+MATRIX_EL_=""
+get_matrix_element(){
+    MATRIX_EL_=""    
+    local x=$1
+    local y=$2
+
+    [[ $x -lt 0 || $y -lt 0 ]] && return 0
+
+    MATRIX_EL_=${MATRIX[$x]:$y:1}
+    return 0
+}
+
+is_accessible(){
+    local x=$1
+    local y=$2
+
+    get_matrix_element $x $y && [[ ! $MATRIX_EL_ = "@" ]] && return 1
+
+    local adj_rolls=0
+    # find rolls above x
+    get_matrix_element $(( i - 1 )) $(( y - 1 )) && [[ $MATRIX_EL_ = "@" ]] && (( adj_rolls++ ))
+    get_matrix_element $(( i - 1 )) $y && [[ $MATRIX_EL_ = "@" ]] && (( adj_rolls++ ))
+    get_matrix_element $(( i - 1 )) $(( y + 1 )) && [[ $MATRIX_EL_ = "@" ]] && (( adj_rolls++ ))
+
+    # find rolls below x
+    get_matrix_element $(( i + 1 )) $(( y - 1 )) && [[ $MATRIX_EL_ = "@" ]] && (( adj_rolls++ ))
+    get_matrix_element $(( i + 1 )) $y && [[ $MATRIX_EL_ = "@" ]] && (( adj_rolls++ ))
+    get_matrix_element $(( i + 1 )) $(( y + 1 )) && [[ $MATRIX_EL_ = "@" ]] && (( adj_rolls++ ))
+
+    # find rolls on x
+    get_matrix_element $i $(( y - 1 )) && [[ $MATRIX_EL_ = "@" ]] && (( adj_rolls++ ))
+    get_matrix_element $i $(( y + 1 )) && [[ $MATRIX_EL_ = "@" ]] && (( adj_rolls++ ))
+
+    [[ $adj_rolls -lt 4 ]] && return 0
+
+    return 1
+}
+
+count_accessible_rolls(){
+
+    # print matrix for effect
+    clear
+    printf "%s\n" ${MATRIX[@]}
+    echo 
+
+    local ROLLS_COUNT_=0
+    local temp_matrix=()
+
+    local i=0
+    while [[ $i -lt ${#MATRIX[@]} ]]; do
+        local line=${MATRIX[$i]}
+        local temp_line=""
+
+        local j=0
+        while [[ $j -lt ${#line} ]]; do
+            if is_accessible $i $j ; then 
+                (( ROLLS_COUNT_++ ))
+                temp_line+="." 
+            else
+                temp_line+="${line[@]:$j:1}"
+            fi
+
+            (( j++ ))
+        done
+
+        temp_matrix+=( $temp_line )
+        (( i++ ))
+    done
+
+    MATRIX=( ${temp_matrix[@]} )
+
+    (( ROLLS += ROLLS_COUNT_ ))
+
+    [[ $ROLLS_COUNT_ -eq 0 ]] && return 0
+
+    # recursively count accessible rolls, until we find no more
+    count_accessible_rolls
+}
+
+# read all lines from input file
+MATRIX=( $(<$INPUT_FILE_PATH) ) 
+count_accessible_rolls
+
+printf "Answer: %d\n" $ROLLS
